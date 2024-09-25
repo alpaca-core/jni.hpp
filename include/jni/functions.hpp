@@ -655,6 +655,13 @@ namespace jni
         return UniqueEnv(result, JNIEnvDeleter(vm));
        }
 
+    inline UniqueEnv AttachCurrentThreadAsDaemon(JavaVM& vm)
+       {
+        JNIEnv* result;
+        CheckErrorCode(vm.AttachCurrentThreadAsDaemon(JNIEnvCast()(&result, &JavaVM::AttachCurrentThreadAsDaemon), nullptr));
+        return UniqueEnv(result, JNIEnvDeleter(vm));
+       }
+
     inline void DetachCurrentThread(JavaVM& vm, UniqueEnv&& env)
        {
         env.release();
@@ -672,12 +679,12 @@ namespace jni
        {
         JNIEnv* env = nullptr;
         auto code = vm.GetEnv(reinterpret_cast<void**>(&env), Unwrap(version));
-        switch (code) 
+        switch (code)
            {
             case JNI_OK:        return UniqueEnv(env,JNIEnvDeleter(vm, false));
             case JNI_EDETACHED: return AttachCurrentThread(vm);
-            default:            
-               CheckErrorCode(code); 
+            default:
+               CheckErrorCode(code);
                return nullptr;
            }
        }
